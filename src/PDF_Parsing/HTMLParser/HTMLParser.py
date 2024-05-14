@@ -3,9 +3,17 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
 
 class HTMLParser:
-    def __init__(self, html_content):
+    def __init__(self, html_content, using_url=False):
         self.html_content = html_content
-        self.soup = BeautifulSoup(self.html_content, 'html.parser')
+        # check if html_content is a url
+        if using_url:
+            if 'http' in html_content and '://' in html_content and '.com' in html_content:
+                import requests
+                response = requests.get(html_content)
+                self.html_content = response.text
+        else:
+            self.soup = BeautifulSoup(self.html_content, 'html.parser')
+            
         self.data = []
         self.processed_texts = set()  # To avoid duplicates
         self.styles = self._extract_styles()
@@ -126,8 +134,6 @@ class HTMLParser:
 
             for child in tag.contents:
                 self._extract_text_with_style(child, current_styles, current_tags)
-
-
         
     def parse(self):
             """
@@ -153,98 +159,19 @@ class HTMLParser:
                 return_tags_list.append(return_tags)
             
             df['tags'] = pd.Series([', '.join(x) for x in return_tags_list])
+            self.parsed_data = df
             
             return df
-
-    def _locate_FASB_amendment_part(self, df):
-        """
-        Locates the FASB amendment part in the given DataFrame.
-
-        Args:
-            df (DataFrame): The DataFrame containing the text content.
-
-        Returns:
-            tuple: A tuple containing the start index and end index of the FASB amendment part.
-
-        Raises:
-            ValueError: If there are multiple occurrences of "Amendments to the" in the text.
-            IndexError: If the next text after "Amendments to the" is not "FASB Accounting Standards Codification".
-        """
-        start_index = df[(df['text_content'] == 'Amendments to the') & ((df['font_size'] == '20pt') | (df['font_size'] == '16pt'))].index[0]
-        if len([start_index]) != 1 : # multiple index
-            raise ValueError('There are multiple "Amendments to the" in the text')
-            
-        # check that the next text is " FASB Accounting Standards Codification®" or not
-        if df.loc[start_index+1, 'text_content'] == 'FASB Accounting Standards Codification' :
-            filtered_df = df[df['text_content'].str.contains('The amendments in this Update were adopted by')]
-            if not filtered_df.empty:
-                end_index = filtered_df.index[0]
-            else:
-                end_index = df.index[-1]
-            df = df.loc[start_index:end_index]
-            self.ammedment_df = df
-        else :
-            raise IndexError('The next text after "Amendments to the" is not "FASB Accounting Standards Codification"')
-            
-        return start_index, end_index
     
-    def _create_old_new_df(self, df, version):
+    def output_whole_text(self, output_file = None):
         """
-        Create a new DataFrame based on the given version.
-
-        Args:
-            df (pandas.DataFrame): The original DataFrame.
-            version (str): The version to be used for filtering the DataFrame. 
-                           Acceptable values are 'old' or 'new'.
+        Returns the extracted text content from the HTML document.
 
         Returns:
-            pandas.DataFrame: The filtered DataFrame based on the given version.
-
-        Raises:
-            ValueError: If an invalid version is provided.
-
+            str: The extracted text content.
         """
-        if version == 'old':
-            # remove df with text_decoration = underline or tags contains underline
-            output_df = df[~((df['text_decoration'].str.contains('underline', case=False)) | (df['tags'].str.contains('underline', case=False)))]
-        elif version == 'new':
-            # remove df with text_decoration = line-through or tags = line-through
-            output_df = df[~((df['text_decoration'].str.contains('line-through', case=False)) | (df['tags'].str.contains('line-through', case=False)))]
+        if output_file: # write text to text file
+            with open(output_file, 'w', encoding='utf-8') as file:
+                file.write(' '.join([row['text_content'] for _, row in self.self.parsed_data.iterrows()]))
         else:
-            raise ValueError(f'Invalid version input: {version}, acceptable values are [old, new]')
-
-        return output_df
-    
-    def output_parsed_text_doc(self, version, output_file = None, text_info_df=None, return_only_amendment_part=True) -> pd.DataFrame:
-        """
-        Outputs the parsed text to a file and returns a DataFrame containing the parsed information.
-
-        Args:
-            version (str): The version of the parsed text.
-            output_file (str): The path to the output file where the parsed text will be saved.
-            text_info_df (pd.DataFrame, optional): A DataFrame containing the parsed text information. If not provided, the method will parse the text.
-            return_only_amendment_part (bool, optional): Whether to return only the amendment part of the parsed text. Defaults to True.
-
-        Returns:
-            pd.DataFrame: A DataFrame containing the parsed information.
-
-        """
-        if text_info_df is None:
-            df = self.parse()
-        else:
-            df = text_info_df
-
-        if return_only_amendment_part:
-            start_index, end_index = self._locate_FASB_amendment_part(df)
-            df = df.loc[start_index:end_index]
-
-        output_df = self._create_old_new_df(df=df, version=version)
-
-        str_list_output = output_df['text_content'].str.cat(sep='  ').split('.  ')
-
-        if output_file:
-            with open(output_file, 'w') as f:
-                for line in str_list_output:
-                    f.write(line + '\n')
-        
-        return output_df
+            return ' '.join([row['text_content'] for _, row in self.self.parsed_data.iterrows()])

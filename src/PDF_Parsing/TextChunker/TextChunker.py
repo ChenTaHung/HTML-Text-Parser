@@ -1,8 +1,11 @@
 import pandas as pd
 from .Score import Score
-class HTMLChunker:
+
+class TextChunker:
     def __init__(self, df, score_dict=Score.ScoreDict):
         self.df = df
+        # cols: 'text_content', 'font_family', 'font_size', 'font_weight', 'text_decoration', 'font_color', 'tags'
+        
         # Define the scoring system for different tags
         self.tags_scores = score_dict.get('tags_scores', {})
         # Define the scoring system for different font sizes
