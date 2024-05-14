@@ -1,2 +1,3 @@
 # HTML-Text-Parser
-A HTML text parser that extracts the text along with the text styles and decorations and form into structured data.
+An HTML text parser designed to extract text along with its styles and decorations, converting it into structured data.
+
