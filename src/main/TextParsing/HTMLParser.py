@@ -11,6 +11,8 @@ class HTMLParser:
                 import requests
                 response = requests.get(html_content)
                 self.html_content = response.text
+            else:
+                raise ValueError('Invalid URL')
         else:
             self.soup = BeautifulSoup(self.html_content, 'html.parser')
             
@@ -29,6 +31,9 @@ class HTMLParser:
             'sup': 'superscript', 'sub': 'subscript', 
             'table': 'table', 'tr': 'table row', 'td': 'table cell', 'th': 'table header', 'tbody': 'table body', 'thead': 'table head', 'tfoot': 'table foot'
         }
+        
+        self.parsed_data = None
+        self.parse_status = False
 
     def _extract_styles(self):
         """
@@ -159,19 +164,26 @@ class HTMLParser:
                 return_tags_list.append(return_tags)
             
             df['tags'] = pd.Series([', '.join(x) for x in return_tags_list])
-            self.parsed_data = df
             
+            self.parsed_data = df
+            self.parse_status = True
             return df
     
-    def output_whole_text(self, output_file = None):
+    def get_text(self, output_file = None):
         """
         Returns the extracted text content from the HTML document.
 
         Returns:
             str: The extracted text content.
         """
+        
+        if self.parse_status :
+            pass
+        else:
+            self.parse()    
+        
         if output_file: # write text to text file
             with open(output_file, 'w', encoding='utf-8') as file:
-                file.write(' '.join([row['text_content'] for _, row in self.self.parsed_data.iterrows()]))
+                file.write(' '.join([row['text_content'] for _, row in self.parsed_data.iterrows()]))
         else:
-            return ' '.join([row['text_content'] for _, row in self.self.parsed_data.iterrows()])
+            return ' '.join([row['text_content'] for _, row in self.parsed_data.iterrows()])
