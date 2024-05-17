@@ -4,17 +4,23 @@ import pandas as pd
 
 class HTMLParser:
     def __init__(self, html_content, using_url=False):
-        self.html_content = html_content
+        
         # check if html_content is a url
         if using_url:
-            if 'http' in html_content and '://' in html_content and '.com' in html_content:
+            if 'http' in html_content and '://' in html_content and ('.com' in html_content or '.org' in html_content or '.net' in html_content or '.edu' in html_content or '.gov' in html_content):
                 import requests
                 response = requests.get(html_content)
-                self.html_content = response.text
+                if response.status_code == 200:
+                    self.html_content = response.text
+                else:
+                    # Failed to retrieve the URL
+                    raise ValueError('Failed to retrieve the URL')
             else:
                 raise ValueError('Invalid URL')
         else:
-            self.soup = BeautifulSoup(self.html_content, 'html.parser')
+            self.html_content = html_content
+        
+        self.soup = BeautifulSoup(self.html_content, 'html.parser')
             
         self.data = []
         self.processed_texts = set()  # To avoid duplicates
@@ -109,6 +115,10 @@ class HTMLParser:
                     'tags': ', '.join(tags)
                 })
         elif isinstance(tag, Tag):
+            # ignore the script tags
+            if tag.name == 'script':
+                return
+                
             current_styles = inherited_styles.copy()
 
             if tag.has_attr('class'):

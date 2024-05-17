@@ -35,8 +35,14 @@ class TextChunker:
         else:
             if 'pt' in font_size:
                 font_size = float(font_size.replace('pt', ''))
+            elif 'px' in font_size:
+                font_size = float(font_size.replace('px', '')) * 0.75
             else:
-                font_size = re.sub(r'[^\d.]', '', font_size) # remove all non-numeric characters
+                digit_part = re.sub(r'[^\d.]', '', font_size)
+                if digit_part == '':
+                    return ''
+                else:
+                    font_size = float(digit_part) # remove all non-numeric characters
             
             # values that exceed the value range, use the smallest or the largest label instead
             if font_size <= self.font_size_bins[0]:
