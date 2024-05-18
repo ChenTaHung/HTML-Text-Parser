@@ -1,4 +1,4 @@
-<h1><p align = 'center'><strong> HTML-Text-Parser</strong> </p></h1>
+<h1><p align = 'center'><strong> HTML-Text-Parser </strong> </p></h1>
 
 This project is designed to extract text from documents and prepare it for processing by Large Language Models (LLM). It not only pulls text but also preserves its styles and decorations by converting everything into structured data. This approach ensures that the style information is maintained through tags or classes, helping to keep the text's original formatting and emphasis.
 
