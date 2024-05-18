@@ -82,15 +82,22 @@ class TextChunker:
         
         return score
     
-    def chunk_text(self, cutoff, keep_text_only = True, refine = True, sel_metric='words', lower_bound = 100, upper_bound = 650) -> list:
+    def chunk_text(self, cutoff = 7, auto_adjust_cutoff=False, keep_text_only=True, refine=True, sel_metric='words', lower_bound=100, upper_bound=650) -> list:
         """
-        Chunk the DataFrame rows based on a cutoff score and add 'is_cutoff' column.
+        Chunk the text based on specified criteria.
 
-        Args:
-            cutoff (float): The cutoff score. Rows with a total_score greater than or equal to the cutoff will be considered as a new chunk and marked with 'is_cutoff' = 1.
+        Parameters:
+        - cutoff (int): The cutoff value for determining whether a row should be included in a chunk. Defaults to 7.
+        - auto_adjust_cutoff (bool, optional): Whether to automatically adjust the cutoff value. Defaults to False.
+        - keep_text_only (bool, optional): Whether to return only the concatenated text content of each chunk. Defaults to True.
+        - refine (bool, optional): Whether to refine the chunks based on the selected metric. Defaults to True.
+        - sel_metric (str, optional): The metric used for refining the chunks. Defaults to 'words'.
+        - lower_bound (int, optional): The lower bound for the refined chunk size. Defaults to 100.
+        - upper_bound (int, optional): The upper bound for the refined chunk size. Defaults to 650.
 
         Returns:
-            list: A list of DataFrames, where each DataFrame represents a chunk of rows with an 'is_cutoff' column indicating the start of a new chunk.
+            list: A list of chunks, either as concatenated text content or as DataFrames.
+
         """
         # Calculate the total score for each row
         self.df['total_score'] = self.df.apply(
@@ -100,26 +107,36 @@ class TextChunker:
         )
 
         # if the total score is greater than or equal to the cutoff, set 'is_cutoff' to 1
-        self.df['is_cutoff'] = np.where(self.df['total_score'] >= cutoff, 1, 0)
+        if auto_adjust_cutoff:
+            # On average the title and subtitle contains 6% of the contents
+            # cutoff set as quantile 94% of the total score
+            cut_off = int(self.df['total_score'].quantile(0.94))
+        else:
+            cut_off = cutoff
+
+        # cut_off new defined variable to avoid conflict with the cutoff parameter
+        self.df['is_cutoff'] = np.where(self.df['total_score'] >= cut_off, 1, 0)
         self.df['Chunk'] = self.df['is_cutoff'].cumsum()
 
         # Split the DataFrame into chunks based on 'chunk' id
         chunk_list = []
-        
+
         for _, group in self.df.groupby('Chunk'):
             chunk_list.append(group)
-        
-        
+
+        # Refine the chunks based on the selected metric
         if refine:
             refiner = ChunkRefiner(chunk_list)
-                
-            res = refiner.refine(lower_bound=lower_bound, upper_bound=upper_bound, sel_metric = sel_metric)
+
+            res = refiner.refine(lower_bound=lower_bound, upper_bound=upper_bound, sel_metric=sel_metric)
         else:
             res = chunk_list
-            
+
         if keep_text_only:
-            return [chunk['text_content'].str.cat(sep = ' ') for chunk in res]
+            # Return the chunks as a list of concatenated text content
+            return [chunk['text_content'].str.cat(sep=' ') for chunk in res]
         else:
+            # Return the chunks as a list of DataFrames
             return res
     
     

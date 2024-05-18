@@ -179,20 +179,24 @@ class HTMLParser:
             self.parse_status = True
             return df
     
-    def get_text(self, output_file = None):
+    def get_text(self, output_file=None):
         """
-        Returns the extracted text content from the HTML document.
+        Retrieves the text content from the parsed data.
+
+        Args:
+            output_file (str, optional): The path to the output file where the text will be written. 
+                                        If not provided, the text content will be returned as a string.
 
         Returns:
-            str: The extracted text content.
+            str: The text content if `output_file` is not provided, otherwise None.
+
         """
-        
-        if self.parse_status :
+        if self.parse_status:
             pass
         else:
-            self.parse()    
-        
-        if output_file: # write text to text file
+            self.parse()
+
+        if output_file:  # write text to text file
             with open(output_file, 'w', encoding='utf-8') as file:
                 file.write(' '.join([row['text_content'] for _, row in self.parsed_data.iterrows()]))
         else:

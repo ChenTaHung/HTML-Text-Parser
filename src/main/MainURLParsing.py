@@ -7,7 +7,6 @@ from src.main.TextParsing.TextChunker import TextChunker
 """
 Using URL
 """
-
 parser = HTMLParser('https://medium.com/@eldatero/web-scraping-with-chatgpt-code-interpreter-using-only-01-prompt-step-by-step-tutorial-cd6b2fb06c90', using_url=True)
 text_info_df = parser.parse()
 chunker = TextChunker(text_info_df)
