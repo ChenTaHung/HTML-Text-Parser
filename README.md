@@ -2,7 +2,7 @@
 
 This project is designed to extract text from documents and prepare it for processing by Large Language Models (LLM). It not only pulls text but also preserves its styles and decorations by converting everything into structured data. This approach ensures that the style information is maintained through tags or classes, helping to keep the text's original formatting and emphasis.
 
-Handling large blocks of text directly is often impractical for LLMs, as they can struggle to process and interpret extensive, undivided text effectively. To solve this, we implement a chunking strategy where text is divided based on its styling cues, such as font size, boldness, or italics, etc. Text with larger fonts or emphasized styles is typically deemed more significant, often representing headings or subheadings, which are treated as separate chunks. This method enhances the readability and usability of the text in LLM applications.
+Handling large blocks of text directly is often impractical for LLMs, as they can struggle to process and interpret extensive, undivided text effectively. To solve this, we implement a chunking strategy where text is divided based on its styling cues, such as font size, boldness, or italics, etc. Text with larger fonts or emphasized styles is typically deemed more significant, often representing headings or subheadings, which are given higher scores and treated as separate chunks, including following context. This method enhances the readability and usability of the text in LLM applications.
 
 <h2><p><b>Installation</b></p></h2>
 
@@ -25,6 +25,8 @@ from src.main.TextParsing.TextChunker import TextChunker
 <h2><p><b>Usage</b></p></h2>
 
 **_Input a html file (.html):_**
+
+If the original documents are in PDF files format, please convert them into html files (recommending the Adobe convertor), and make sure the html contents are parsable.
 
 ```python
 # Open the html file and read into the program
@@ -87,6 +89,12 @@ The `chunk_text` function is designed to segment text into smaller chunks based 
 - **upper_bound** (int, optional): Sets the maximum size of a chunk when refining. The default is set at 650 words.
 
 The function returns a list of chunks. These chunks are either simple concatenated `text contents` or `DataFrames`, depending on the `keep_text_only` parameter. This function is essential for preparing large texts in a format that is more manageable for LLMs to process.
+
+<h2><p><b>Potential Future works</b></p></h2>
+
+1. Able to handle external CSS files that defined the predefined classes.
+2. Optimize the logic of refining chunks.
+3. Optimize and generalize the score dictionary for scoring each text.
 
 <h2><p><b>Environment</b></p></h2>
 
