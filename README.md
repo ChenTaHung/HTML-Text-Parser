@@ -41,7 +41,7 @@ allText = parser.get_text()
 
 The `text_info_df` holds all the extracted text along with its styles and decorations in a structured format.
 
-<p align = 'center'><img src = 'https://github.com/ChenTaHung/HTML-Text-Parser/blob/doc/images/text_info_df.png' alt = 'Image' style = 'width: 800px'/></p>
+<p align = 'center'><img src = '[https://github.com/ChenTaHung/HTML-Text-Parser/blob/doc/images/text_info_df.png](https://github.com/ChenTaHung/HTML-Text-Parser/blob/main/doc/images/text_info_df.png)' alt = 'Image' style = 'width: 800px'/></p>
 
 
 Now that we have the dataframe containing all the text segments, we can use the chunker to break the text into smaller pieces, making it more manageable for processing by the LLMs.
