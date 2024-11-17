@@ -10,7 +10,7 @@ First, clone the GitHub repository.
 
 ```zsh
 git clone https://github.com/ChenTaHung/HTML-Text-Parser.git path/to/clone/the/repository # HTTPS
-git cloen git@github.com:ChenTaHung/HTML-Text-Parser.git path/to/clone/the/repository # SSH
+git clone git@github.com:ChenTaHung/HTML-Text-Parser.git path/to/clone/the/repository # SSH
 ```
 
 Then, switch to the directory where the repository has been cloned.
